@@ -160,8 +160,8 @@ for c, i in enumerate(ReconstructionNames[numpy.random.randint(StepWidth)::StepW
     if options.scalebar:
         # Add white scalebar with the given length (and 1/10 of it as height) at the bottom right of the image
         fromborder = 200
-        rec[-fromborder - ScaleBarPixels / 10.:-fromborder,
-            -fromborder - ScaleBarPixels:-fromborder] = 255
+        rec[int(round(-fromborder - ScaleBarPixels / 10.)):-fromborder,
+            int(round(-fromborder - ScaleBarPixels)):-fromborder] = 255
     if options.resize:
         print('Shrinking image to %0.2f %% of original size' % (100 * options.resize))
         # Resize with float value of requested and given size
