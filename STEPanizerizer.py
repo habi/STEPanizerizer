@@ -78,25 +78,35 @@ if options.numfiles and options.slicedistance:
 if options.disectorthickness:
     parser.error('Disector functionality not implemented yet, sorry!\nPlease remove the -d option...')
 
+# RecFolder
+# TODO: Make it work if there is more than one 'rec' folder
+options.recfolder = 'rec_HU'
+
 # Get the (isotropic) pixel size of the scan.
 # We need it for the scale bar and - if requested - disector thickness.
 if not options.pixelsize:
     options.pixelsize = get_pixelsize(
-        glob.glob(os.path.join(options.samplefolder, 'rec', '*.log'))[0])
+        glob.glob(os.path.join(options.samplefolder, options.recfolder, '*.log'))[0])
 print('The scan was done with a voxel size of %0.2f um.' % options.pixelsize)
 
 # Make output directory, named with relevant parameters
 OutFolder = os.path.join(options.samplefolder, 'STEPanizer')
+OutFolder += '_%s' % options.recfolder
 if options.numfiles:
     OutFolder += '_numfls%s' % options.numfiles
 if options.slicedistance:
     OutFolder += '_slcdst%0.fum' % options.slicedistance
 OutFolder += '_pxsz%0.fum' % options.pixelsize
 OutFolder += '_sclbr%sum' % options.scalebar
-os.makedirs(OutFolder, exist_ok=True)  # Do not complain if the folder already exists...
+try:
+    os.makedirs(OutFolder)
+except FileExistsError:
+    print('\n\nThe output folder %s already exists' % OutFolder)
+    print('We try to not overwrite anything...\n')
+    sys.exit('Please delete the folder or choose other parameters')
 
-print('Looking for *.png files in %s' % os.path.join(options.samplefolder, 'rec'))
-ReconstructionNames = glob.glob(os.path.join(options.samplefolder, 'rec', '*rec*.png'))
+print('Looking for *.png files in %s' % os.path.join(options.samplefolder, options.recfolder))
+ReconstructionNames = sorted(glob.glob(os.path.join(options.samplefolder, options.recfolder, '*rec*.png')))
 print('We found %s reconstructions.' % len(ReconstructionNames))
 if options.numfiles:
     print('We will select %s images from these and rewrite them to %s' % (options.numfiles,
@@ -171,14 +181,14 @@ if options.numfiles:
                                                                                   StepWidth,
                                                                                   len(ReconstructionNames)))
     logging.info('As requested, %s images are written fom %s to %s' % (options.numfiles,
-                                                                       os.path.abspath(os.path.join(options.samplefolder, 'rec')),
+                                                                       os.path.abspath(os.path.join(options.samplefolder, options.recfolder)),
                                                                        os.path.abspath(OutFolder)))
 if options.slicedistance:
     print('A requested slice distance of %s correspond to every %sth file of %s total files' % (options.slicedistance,
                                                                                                 StepWidth,
                                                                                                 len(ReconstructionNames)))
     logging.info('As requested, slices spaced by %s um are written fom %s to %s' % (options.slicedistance,
-                                                                                    os.path.abspath(os.path.join(options.samplefolder, 'rec')),
+                                                                                    os.path.abspath(os.path.join(options.samplefolder, options.recfolder)),
                                                                                     os.path.abspath(OutFolder)))
 print('The resulting slice distance in the exported files is (rounded) to %0.2f um' % (StepWidth * options.pixelsize))
 logging.info('The resulting slice distance in the exported files is (rounded) %0.2f um' % (StepWidth * options.pixelsize))
@@ -194,9 +204,9 @@ if options.verbose:
 for c, i in enumerate(ReconstructionNames[numpy.random.randint(StepWidth)::StepWidth]):
     rec = scipy.misc.imread(i, flatten=True)
     OutputName = os.path.join(OutFolder, '%s_%s.jpg' % (CommonPrefix, c + 1))
-    Output = '%s/%s: %s --> %s' % (c + 1, len(ReconstructionNames[::StepWidth]),
-                                   os.path.split(i)[1],
-                                   os.path.split(OutputName)[1])
+    Output = '%2s/%s: %s --> %s' % (c + 1, len(ReconstructionNames[::StepWidth]),
+                                    os.path.split(i)[1],
+                                    os.path.split(OutputName)[1])
     print(Output)
     if options.scalebar:
         # Add white scalebar with the given length (and 1/10 of it as height) at the bottom right of the image
