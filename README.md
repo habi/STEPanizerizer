@@ -6,6 +6,6 @@ Exporting and renaming an uniform random sample of (thousands of) slices is anno
 
 STEPanizerizer [1] to the rescue!
 You give the Python script a data set folder as input and tell it how many slices you'd like to have ready for counting.
-After a bit of waiting, you have the requested number of files as correctly numbered JPG images waiting in another folder, ready for your counting pleasure.
+After a bit of waiting, you have the requested number of files as correctly numbered JPG images with a scale bar waiting in another folder, ready for your counting pleasure.
 
 [1]: I know, the name could be spiffier :)
